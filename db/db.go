@@ -21,7 +21,7 @@ type mongoSession struct {
 
 type DB interface {
 	GetAll(q politicos.Queryable, p int) ([]politicos.Queryable, error)
-	GetUnique(f politicos.Queryable, q politicos.Queryable, opts bson.D) ([]politicos.Queryable, error)
+	GetUnique(f politicos.Queryable, q politicos.Queryable, opts UniqueOptions) ([]politicos.Queryable, error)
 	InsertMany(q politicos.Queryable, d []interface{}) (*mongo.InsertManyResult, error)
 	Ping() error
 }
@@ -59,11 +59,36 @@ func (m *mongoSession) InsertMany(q politicos.Queryable, d []interface{}) (*mong
 	return m.collection.InsertMany(q.GetCollectionName(), d)
 }
 
-func (m *mongoSession) GetUnique(f politicos.Queryable, q politicos.Queryable, opts bson.D) ([]politicos.Queryable, error) {
+type UniqueOptions struct {
+	Data  bson.D
+	IDs   bson.D
+	Match bson.D
+	Sort  bson.D
+}
+
+func (m *mongoSession) GetUnique(f politicos.Queryable, q politicos.Queryable, opts UniqueOptions) ([]politicos.Queryable, error) {
 	log.Debug("[DB] GetUnique")
 
-	group := bson.D{{"$group", bson.D{{"_id", opts}}}}
-	pipeline := mongo.Pipeline{group}
+	var sort bson.D
+	if opts.Sort != nil {
+		sort = bson.D{{"$sort", opts.Sort}}
+	}
+
+	var groupData bson.D
+	if opts.Data != nil {
+		groupData = bson.D{{"_id", opts.IDs}, {"data", opts.Data}}
+	} else {
+		groupData = bson.D{{"_id", opts.IDs}}
+	}
+	group := bson.D{{"$group", groupData}}
+
+	match := bson.D{{"$match", opts.Match}}
+	var pipeline mongo.Pipeline
+	if opts.Match != nil {
+		pipeline = mongo.Pipeline{sort, match, group, sort}
+	} else {
+		pipeline = mongo.Pipeline{group}
+	}
 	results, err := m.collection.Aggregate(f.GetCollectionName(), pipeline)
 	if err != nil {
 		return nil, err
@@ -71,7 +96,13 @@ func (m *mongoSession) GetUnique(f politicos.Queryable, q politicos.Queryable, o
 
 	operationList := []politicos.Queryable{}
 	for _, result := range results {
-		bsonBytes, err := bson.Marshal(result["_id"])
+		var bsonBytes []byte
+		if opts.Data != nil {
+			bsonBytes, err = bson.Marshal(result)
+		} else {
+			bsonBytes, err = bson.Marshal(result["_id"])
+		}
+
 		if err != nil {
 			return nil, err
 		}

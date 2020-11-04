@@ -18,16 +18,17 @@ func ProcessAllPoliticalParties() error {
 		return err
 	}
 
-	group := bson.D{
-		{"siglum", "$sg_partido"},
-		{"name", "$nm_partido"},
-		{"tseNumber", "$nr_partido"},
+	opts := db.UniqueOptions{
+		IDs: bson.D{
+			{"siglum", "$sg_partido"},
+			{"name", "$nm_partido"},
+			{"tseNumber", "$nr_partido"},
+		},
 	}
-
 	results, err := dbInstance.GetUnique(
 		&politicos.Candidatures{},
 		&politicos.PoliticalParty{},
-		group,
+		opts,
 	)
 	if err != nil {
 		return err

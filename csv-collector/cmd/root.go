@@ -51,4 +51,6 @@ func init() {
 	rootCmd.AddCommand(postProcessPoliticalOfficeCmd)
 	rootCmd.AddCommand(postProcessCandidacyStatusCmd)
 	rootCmd.AddCommand(postProcessEducationCmd)
+	rootCmd.AddCommand(postProcessCandidateCmd)
+
 }

@@ -18,15 +18,16 @@ func ProcessAllPoliticalOffices() error {
 		return err
 	}
 
-	group := bson.D{
-		{"tseId", "$cd_cargo"},
-		{"name", "$ds_cargo"},
+	opts := db.UniqueOptions{
+		IDs: bson.D{
+			{"tseId", "$cd_cargo"},
+			{"name", "$ds_cargo"},
+		},
 	}
-
 	results, err := dbInstance.GetUnique(
 		&politicos.Candidatures{},
 		&politicos.PoliticalOffice{},
-		group,
+		opts,
 	)
 	if err != nil {
 		return err
