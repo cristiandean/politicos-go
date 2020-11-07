@@ -9,12 +9,9 @@ import (
 
 var postProcessAllCmd = &cobra.Command{
 	Use:   "process-all",
-	Short: "Process all data",
+	Short: "Imports the data from CSV and post-processes it",
 	Run: func(cmd *cobra.Command, args []string) {
-		processCSVFilesCmd.Execute()
-		postProcessPoliticalPartyCmd.Execute()
-		postProcessPoliticalOfficeCmd.Execute()
-		postProcessCandidacyStatusCmd.Execute()
-		postProcessEducationCmd.Execute()
+		importCSVFilesCmd.Execute()
+		runPostProcess("all")
 	},
 }

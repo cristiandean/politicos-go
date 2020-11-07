@@ -45,10 +45,6 @@ func init() {
 		postInitCommands(rootCmd.Commands())
 	})
 
-	rootCmd.AddCommand(postProcessAllCmd)
-	rootCmd.AddCommand(processCSVFilesCmd)
-	rootCmd.AddCommand(postProcessPoliticalPartyCmd)
-	rootCmd.AddCommand(postProcessPoliticalOfficeCmd)
-	rootCmd.AddCommand(postProcessCandidacyStatusCmd)
-	rootCmd.AddCommand(postProcessEducationCmd)
+	rootCmd.AddCommand(importCSVFilesCmd)
+	rootCmd.AddCommand(postProcessCmd)
 }
